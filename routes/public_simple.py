@@ -71,7 +71,8 @@ class Route:  # pylint: disable=E1101,R0903
             result_item = {
                 "filename": file_name,
                 "url": flask.url_for(
-                    "repo_target.wheel",
+                    "repo_target.public_wheel",
+                    group=group,
                     project=project,
                     wheel=file_name,
                     _external=True,
