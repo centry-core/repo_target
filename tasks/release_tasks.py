@@ -7,7 +7,7 @@ import os
 import tarfile
 import tempfile
 
-from tools import log, repo_core  # pylint: disable=E0401
+from tools import log, repo_core, this  # pylint: disable=E0401
 from pylon.core.tools import process  # pylint: disable=E0401
 
 from .common import GithubClient
@@ -47,7 +47,6 @@ def collect_release_files_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
                 #
                 with open(plugin_path, "wb") as file:
                     github_client.get_tarball(org, repo_name, release_tag, file=file)
-                # TODO: add to registry
             else:
                 releases = github_client.list_releases(org, repo_name)
                 #
@@ -64,8 +63,13 @@ def collect_release_files_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
                             with open(bundle_path, "wb") as file:
                                 for chunk in response.iter_content(chunk_size=8192):
                                     file.write(chunk)
-                            #
-                            # TODO: add to registry
+    #
+    log.info("Updating registry")
+    #
+    this.module.depot_groups[release_tag] = {
+        "plugins": this.module.collect_depot_group_plugins(plugins_path),
+        "bundles": this.module.collect_depot_group_bundles(bundles_path),
+    }
 
 
 def collect_release_requirements_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
@@ -76,6 +80,8 @@ def collect_release_requirements_task(*_args, **kwargs):  # pylint: disable=R091
     base_path = config.get("base_path", "/data/repo")
     depot_path = os.path.join(base_path, "depot")
     simple_path = os.path.join(base_path, "simple")
+    cache_path = os.path.join(base_path, "cache")
+    tmp_path = os.path.join(base_path, "tmp")
     #
     plugins_path = os.path.join(depot_path, release_tag, "plugins")
     requirements_path = os.path.join(simple_path, release_tag)
@@ -124,18 +130,26 @@ def collect_release_requirements_task(*_args, **kwargs):  # pylint: disable=R091
             with open(requirements_txt, "wb") as file:
                 file.write(plugin_requirements)
             #
+            env = os.environ.copy()
+            env["TMPDIR"] = tmp_path
+            #
             process.run_command(
                 [
                     "pip3", "wheel",
                     "--isolated",
                     "--no-cache-dir",
-                    # "--cache-dir", ...,
+                    "--cache-dir", cache_path,
                     # "--extra-index-url", "https://download.pytorch.org/whl/cpu",
                     "--wheel-dir", requirements_path,
                     "--requirement", requirements_txt,
                 ],
-                # Set TMPDIR with chmod 1777
+                env=env,
             )
         finally:
             os.remove(requirements_txt)
-    # TODO: add to registry
+    #
+    log.info("Updating registry")
+    #
+    this.module.simple_groups[release_tag] = this.module.collect_simple_group_wheels(
+        requirements_path
+    )
