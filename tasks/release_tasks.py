@@ -4,6 +4,7 @@
 """ Task """
 
 import os
+import gc
 import tarfile
 import tempfile
 
@@ -63,6 +64,9 @@ def collect_release_files_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
                             with open(bundle_path, "wb") as file:
                                 for chunk in response.iter_content(chunk_size=8192):
                                     file.write(chunk)
+                        response.close()
+            #
+            gc.collect()
     #
     log.info("Updating registry")
     #
@@ -70,6 +74,8 @@ def collect_release_files_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
         "plugins": this.module.collect_depot_group_plugins(plugins_path),
         "bundles": this.module.collect_depot_group_bundles(bundles_path),
     }
+    #
+    gc.collect()
 
 
 def collect_release_requirements_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
@@ -118,6 +124,8 @@ def collect_release_requirements_task(*_args, **kwargs):  # pylint: disable=R091
                 if plugin_requirements is not None:
                     break
         #
+        gc.collect()
+        #
         if plugin_requirements is None:
             continue
         #
@@ -147,9 +155,12 @@ def collect_release_requirements_task(*_args, **kwargs):  # pylint: disable=R091
             )
         finally:
             os.remove(requirements_txt)
+            gc.collect()
     #
     log.info("Updating registry")
     #
     this.module.simple_groups[release_tag] = this.module.collect_simple_group_wheels(
         requirements_path
     )
+    #
+    gc.collect()
