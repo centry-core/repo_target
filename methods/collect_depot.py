@@ -49,7 +49,7 @@ class Method:  # pylint: disable=E1101,R0903
                         #
                         if member_name == "requirements.txt":
                             try:
-                                plugin_requirements = file.extractfile(member).read()
+                                plugin_requirements = file.extractfile(member).read().decode()
                             except:  # pylint: disable=W0702
                                 pass
                         #
@@ -60,7 +60,7 @@ class Method:  # pylint: disable=E1101,R0903
                     continue
                 #
                 if plugin_requirements is None:
-                    plugin_requirements = b""
+                    plugin_requirements = ""
                 #
                 result[plugin_name] = {
                     "file": file_path,

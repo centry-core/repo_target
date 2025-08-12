@@ -81,7 +81,7 @@ class Route:  # pylint: disable=E1101,R0903
             #
             if data == "requirements":
                 response = flask.make_response(
-                    self.public_depot_groups[group][entity][name]["requirements"]
+                    self.public_depot_groups[group][entity][name]["requirements"].encode()
                 )
                 response.mimetype = "application/octet-stream"
                 return response

@@ -75,10 +75,14 @@ def collect_release_files_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     #
     log.info("Updating registry")
     #
-    this.module.depot_groups[release_tag] = {
+    group_data = {
         "plugins": this.module.collect_depot_group_plugins(plugins_path),
         "bundles": this.module.collect_depot_group_bundles(bundles_path),
     }
+    #
+    with this.module.lock:
+        this.module.depot_groups[release_tag] = group_data
+        this.descriptor.save_state()
     #
     gc.collect()
 
@@ -169,8 +173,10 @@ def collect_release_requirements_task(*_args, **kwargs):  # pylint: disable=R091
     #
     log.info("Updating registry")
     #
-    this.module.simple_groups[release_tag] = this.module.collect_simple_group_wheels(
-        requirements_path
-    )
+    group_data = this.module.collect_simple_group_wheels(requirements_path)
+    #
+    with this.module.lock:
+        this.module.simple_groups[release_tag] = group_data
+        this.descriptor.save_state()
     #
     gc.collect()

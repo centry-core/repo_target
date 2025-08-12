@@ -49,7 +49,7 @@ class Method:  # pylint: disable=E1101,R0903
                     "metadata_hashes": {
                         "sha256": hashlib.sha256(wheel_metadata).hexdigest(),
                     },
-                    "metadata": wheel_metadata,
+                    "metadata": wheel_metadata.decode(),
                     "version": wheel.version,
                     "requires_python": wheel_requires_python,
                 }

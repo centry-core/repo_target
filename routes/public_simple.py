@@ -126,7 +126,9 @@ class Route:  # pylint: disable=E1101,R0903
         if wheel not in self.public_simple_groups[group][project]:
             flask.abort(404)
         #
-        response = flask.make_response(self.public_simple_groups[group][project][wheel]["metadata"])
+        response = flask.make_response(
+            self.public_simple_groups[group][project][wheel]["metadata"].encode()
+        )
         response.mimetype = "application/octet-stream"
         #
         return response
