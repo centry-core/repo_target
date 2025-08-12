@@ -5,6 +5,7 @@
 
 import os
 import json
+import time
 import tarfile
 
 from tools import web  # pylint: disable=E0401
@@ -21,6 +22,8 @@ class Method:  # pylint: disable=E1101,R0903
         #
         if os.path.exists(plugins_path):
             for file_name in os.listdir(plugins_path):
+                time.sleep(0.01)  # yield
+                #
                 if not file_name.endswith(".tar.gz"):
                     continue
                 #
@@ -79,6 +82,8 @@ class Method:  # pylint: disable=E1101,R0903
         #
         if os.path.exists(bundles_path):
             for file_name in os.listdir(bundles_path):
+                time.sleep(0.01)  # yield
+                #
                 file_path = os.path.join(bundles_path, file_name)
                 #
                 result[file_name] = {

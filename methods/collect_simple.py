@@ -5,6 +5,7 @@
 
 import re
 import os
+import time
 import hashlib
 
 import pkginfo  # pylint: disable=E0401
@@ -23,6 +24,8 @@ class Method:  # pylint: disable=E1101,R0903
         #
         if os.path.exists(wheel_path):
             for file_name in os.listdir(wheel_path):
+                time.sleep(0.01)  # yield
+                #
                 file_path = os.path.join(wheel_path, file_name)
                 #
                 with open(file_path, "rb") as file:
