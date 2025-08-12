@@ -22,6 +22,8 @@ def collect_public_release_files_task(*_args, **kwargs):  # pylint: disable=R091
         log.error("Release not specified")
         return
     #
+    log.info("Target: %s", release_tag)
+    #
     config = repo_core.get_settings()
     github_client = GithubClient(config["github_token"])
     #
@@ -94,6 +96,8 @@ def collect_public_release_requirements_task(*_args, **kwargs):  # pylint: disab
     if not release_tag:
         log.error("Release not specified")
         return
+    #
+    log.info("Target: %s", release_tag)
     #
     config = repo_core.get_settings()
     #
