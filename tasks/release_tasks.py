@@ -24,6 +24,12 @@ def collect_release_files_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     #
     log.info("Target: %s", release_tag)
     #
+    whitelist = []
+    #
+    if ":" in release_tag:
+        release_tag, whitelist_data = release_tag.split(":", 1)
+        whitelist = whitelist_data.split(",")
+    #
     config = repo_core.get_settings()
     github_client = GithubClient(config["github_token"])
     #
@@ -41,6 +47,9 @@ def collect_release_files_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     #
     for org in config["target_orgs"]:  # pylint: disable=R1702
         for repo_name in config["known_repos"]["target"][org]:
+            if whitelist and repo_name not in whitelist:
+                continue
+            #
             log.info("Collecting depot data: %s - %s", org, repo_name)
             #
             metadata_content = github_client.get_content(
@@ -66,7 +75,12 @@ def collect_release_files_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
                         file_ext = os.path.splitext(asset["name"])[1]
                         bundle_path = os.path.join(bundles_path, f"{repo_name}{file_ext}")
                         #
-                        response = github_client.session.get(asset["url"], stream=True)
+                        headers = github_client.session.headers.copy()
+                        headers["Accept"] = "application/octet-stream"
+                        #
+                        response = github_client.session.get(
+                            asset["url"], headers=headers, stream=True
+                        )
                         if response.ok:
                             with open(bundle_path, "wb") as file:
                                 for chunk in response.iter_content(chunk_size=8192):
