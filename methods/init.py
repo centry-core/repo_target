@@ -11,6 +11,7 @@ from tools import web, auth, context, repo_core
 
 from ..tasks import repo_tasks
 from ..tasks import release_tasks
+from ..tasks import public_release_tasks
 
 
 class Method:  # pylint: disable=E1101,R0903
@@ -42,10 +43,13 @@ class Method:  # pylint: disable=E1101,R0903
         #
         # Tasks
         #
+        # pylint: disable=C0301
         local_tasks = [
             ("list_repos", repo_tasks.list_repos_task),
             ("collect_release_files", release_tasks.collect_release_files_task),
             ("collect_release_requirements", release_tasks.collect_release_requirements_task),
+            ("collect_public_release_files", public_release_tasks.collect_public_release_files_task),
+            ("collect_public_release_requirements", public_release_tasks.collect_public_release_requirements_task),
         ]
         #
         for task_name, task_func in local_tasks:
