@@ -17,6 +17,11 @@ from .common import GithubClient
 def collect_public_release_files_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     """ Task """
     release_tag = kwargs["param"]
+    #
+    if not release_tag:
+        log.error("Release not specified")
+        return
+    #
     config = repo_core.get_settings()
     github_client = GithubClient(config["github_token"])
     #
@@ -81,6 +86,11 @@ def collect_public_release_files_task(*_args, **kwargs):  # pylint: disable=R091
 def collect_public_release_requirements_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     """ Task """
     release_tag = kwargs["param"]
+    #
+    if not release_tag:
+        log.error("Release not specified")
+        return
+    #
     config = repo_core.get_settings()
     #
     base_path = config.get("base_path", "/data/repo")
