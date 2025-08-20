@@ -69,23 +69,23 @@ def collect_release_files_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
                 #
                 for release_info in releases:
                     if release_info["name"] == release_tag:
-                        log.info("- Getting bundle data")
-                        #
-                        asset = release_info["assets"][0]
-                        file_ext = os.path.splitext(asset["name"])[1]
-                        bundle_path = os.path.join(bundles_path, f"{repo_name}{file_ext}")
-                        #
-                        headers = github_client.session.headers.copy()
-                        headers["Accept"] = "application/octet-stream"
-                        #
-                        response = github_client.session.get(
-                            asset["url"], headers=headers, stream=True
-                        )
-                        if response.ok:
-                            with open(bundle_path, "wb") as file:
-                                for chunk in response.iter_content(chunk_size=8192):
-                                    file.write(chunk)
-                        response.close()
+                        for asset in release_info["assets"]:
+                            asset_name = asset["name"]
+                            bundle_path = os.path.join(bundles_path, asset_name)
+                            #
+                            log.info("- Getting bundle data: %s", asset_name)
+                            #
+                            headers = github_client.session.headers.copy()
+                            headers["Accept"] = "application/octet-stream"
+                            #
+                            response = github_client.session.get(
+                                asset["url"], headers=headers, stream=True
+                            )
+                            if response.ok:
+                                with open(bundle_path, "wb") as file:
+                                    for chunk in response.iter_content(chunk_size=8192):
+                                        file.write(chunk)
+                            response.close()
             #
             gc.collect()
     #
