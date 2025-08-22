@@ -113,6 +113,12 @@ def collect_public_release_requirements_task(*_args, **kwargs):  # pylint: disab
     #
     log.info("Target: %s", release_tag)
     #
+    whitelist = []
+    #
+    if ":" in release_tag:
+        release_tag, whitelist_data = release_tag.split(":", 1)
+        whitelist = [f"{item}.tar.gz" for item in whitelist_data.split(",")]
+    #
     config = repo_core.get_settings()
     #
     base_path = config.get("base_path", "/data/repo")
@@ -132,6 +138,9 @@ def collect_public_release_requirements_task(*_args, **kwargs):  # pylint: disab
     #
     for file_name in os.listdir(plugins_path):
         if not file_name.endswith(".tar.gz"):
+            continue
+        #
+        if whitelist and file_name not in whitelist:
             continue
         #
         file_path = os.path.join(plugins_path, file_name)
