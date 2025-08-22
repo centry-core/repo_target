@@ -64,28 +64,28 @@ def collect_release_files_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
                 #
                 with open(plugin_path, "wb") as file:
                     github_client.get_tarball(org, repo_name, release_tag, file=file)
-            else:
-                releases = github_client.list_releases(org, repo_name)
-                #
-                for release_info in releases:
-                    if release_info["name"] == release_tag:
-                        for asset in release_info["assets"]:
-                            asset_name = asset["name"]
-                            bundle_path = os.path.join(bundles_path, asset_name)
-                            #
-                            log.info("- Getting bundle data: %s", asset_name)
-                            #
-                            headers = github_client.session.headers.copy()
-                            headers["Accept"] = "application/octet-stream"
-                            #
-                            response = github_client.session.get(
-                                asset["url"], headers=headers, stream=True
-                            )
-                            if response.ok:
-                                with open(bundle_path, "wb") as file:
-                                    for chunk in response.iter_content(chunk_size=8192):
-                                        file.write(chunk)
-                            response.close()
+            #
+            releases = github_client.list_releases(org, repo_name)
+            #
+            for release_info in releases:
+                if release_info["name"] == release_tag:
+                    for asset in release_info["assets"]:
+                        asset_name = asset["name"]
+                        bundle_path = os.path.join(bundles_path, asset_name)
+                        #
+                        log.info("- Getting bundle data: %s", asset_name)
+                        #
+                        headers = github_client.session.headers.copy()
+                        headers["Accept"] = "application/octet-stream"
+                        #
+                        response = github_client.session.get(
+                            asset["url"], headers=headers, stream=True
+                        )
+                        if response.ok:
+                            with open(bundle_path, "wb") as file:
+                                for chunk in response.iter_content(chunk_size=8192):
+                                    file.write(chunk)
+                        response.close()
             #
             gc.collect()
     #
