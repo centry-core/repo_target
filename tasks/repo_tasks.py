@@ -34,3 +34,46 @@ def list_repos_task(*_args, **_kwargs):
             log.info("Unknown (new) repos:")
             for repo_name in unknown_repos:
                 log.info("- %s", repo_name)
+
+
+def tag_release_from_main_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
+    """ Task """
+    release_tag = kwargs["param"]
+    #
+    if not release_tag:
+        log.error("Release not specified")
+        return
+    #
+    log.info("Target: %s", release_tag)
+    #
+    whitelist = []
+    #
+    if ":" in release_tag:
+        release_tag, whitelist_data = release_tag.split(":", 1)
+        whitelist = whitelist_data.split(",")
+    #
+    release_tag_message = release_tag
+    #
+    config = repo_core.get_settings()
+    github_client = GithubClient(config["github_token"])
+    #
+    for org in config["target_orgs"]:  # pylint: disable=R1702
+        for repo_name in config["known_repos"]["target"][org]:
+            if whitelist and repo_name not in whitelist:
+                continue
+            #
+            log.info("Tagging from main: %s - %s", org, repo_name)
+            #
+            try:
+                repo = github_client.get_repo(org, repo_name)
+                branch = github_client.get_branch(
+                    org, repo_name, repo["default_branch"]
+                )
+                #
+                github_client.create_or_update_tag_and_ref(
+                    org, repo_name,
+                    release_tag, release_tag_message,
+                    branch["commit"]["sha"],
+                )
+            except:  # pylint: disable=W0702
+                log.exception("Failed to apply tag for: %s - %s", org, repo_name)
