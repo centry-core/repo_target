@@ -30,7 +30,7 @@ class Route:  # pylint: disable=E1101,R0903
     @web.route("/simple/<group>/")
     def project_list(self, group):
         """ Route """
-        if not repo_core.user_has_release(release=group):
+        if not self.auth_user_has_release(release=group):
             flask.abort(403)
         #
         if group not in self.simple_groups:
@@ -56,7 +56,7 @@ class Route:  # pylint: disable=E1101,R0903
     @web.route("/simple/<group>/<project>/")
     def project_detail(self, group, project):
         """ Route """
-        if not repo_core.user_has_release(release=group):
+        if not self.auth_user_has_release(release=group):
             flask.abort(403)
         #
         if group not in self.simple_groups:
@@ -108,7 +108,7 @@ class Route:  # pylint: disable=E1101,R0903
     @web.route("/simple/<group>/<project>/<wheel>")
     def wheel(self, group, project, wheel):
         """ Route """
-        if not repo_core.user_has_release(release=group):
+        if not self.auth_user_has_release(release=group):
             flask.abort(403)
         #
         if group not in self.simple_groups:
@@ -129,7 +129,7 @@ class Route:  # pylint: disable=E1101,R0903
     @web.route("/simple/<group>/<project>/<wheel>.metadata")
     def wheel_metadata(self, group, project, wheel):
         """ Route """
-        if not repo_core.user_has_release(release=group):
+        if not self.auth_user_has_release(release=group):
             flask.abort(403)
         #
         if group not in self.simple_groups:

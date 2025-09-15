@@ -28,7 +28,7 @@ class Route:  # pylint: disable=E1101,R0903
     @web.route("/depot/<group>/")
     def depot_group_info(self, group):
         """ Route """
-        if not repo_core.user_has_release(release=group):
+        if not self.auth_user_has_release(release=group):
             flask.abort(403)
         #
         if group not in self.depot_groups:
@@ -47,7 +47,7 @@ class Route:  # pylint: disable=E1101,R0903
     @web.route("/depot/<group>/<entity>/<name>/")
     def depot_entity_info(self, group, entity, name):
         """ Route """
-        if not repo_core.user_has_release(release=group):
+        if not self.auth_user_has_release(release=group):
             flask.abort(403)
         #
         if group not in self.depot_groups:
@@ -68,7 +68,7 @@ class Route:  # pylint: disable=E1101,R0903
     @web.route("/depot/<group>/<entity>/<name>/<data>")
     def depot_entity_data(self, group, entity, name, data):
         """ Route """
-        if not repo_core.user_has_release(release=group):
+        if not self.auth_user_has_release(release=group):
             flask.abort(403)
         #
         if group not in self.depot_groups:

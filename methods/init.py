@@ -8,7 +8,7 @@ import os
 import threading
 
 # pylint: disable=E0401
-from tools import web, auth, context, repo_core
+from tools import web, auth, context, repo_core, log
 
 from ..tasks import repo_tasks
 from ..tasks import registry_tasks
@@ -50,6 +50,8 @@ class Method:  # pylint: disable=E1101,R0903
         # Registry
         #
         if "repo_target_registry" not in self.descriptor.state:
+            log.info("Registry not present: initializing")
+            #
             self.descriptor.state["repo_target_registry"] = {
                 "public_depot_groups": {},
                 "public_simple_groups": {},
@@ -57,6 +59,8 @@ class Method:  # pylint: disable=E1101,R0903
                 "simple_groups": {},
             }
             self.descriptor.save_state()
+            #
+            registry_tasks.sync_registry_task()
         #
         # pylint: disable=C0301
         self.public_depot_groups = self.descriptor.state["repo_target_registry"]["public_depot_groups"]
