@@ -5,6 +5,7 @@
 
 import os
 import gc
+import shutil
 
 from tools import log, repo_core, this  # pylint: disable=E0401
 
@@ -101,3 +102,44 @@ def sync_registry_task(*_args, **_kwargs):
             this.descriptor.save_state()
     #
     gc.collect()
+
+
+def purge_release_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
+    """ Task """
+    release_tag = kwargs["param"]
+    #
+    if not release_tag:
+        log.error("Release not specified")
+        return
+    #
+    log.info("Target: %s", release_tag)
+    #
+    log.info("Purging from state")
+    with this.module.lock:
+        this.module.public_depot_groups.pop(release_tag, None)
+        this.module.public_simple_groups.pop(release_tag, None)
+        this.module.depot_groups.pop(release_tag, None)
+        this.module.simple_groups.pop(release_tag, None)
+        this.descriptor.save_state()
+    #
+    gc.collect()
+    #
+    repo_core_settings = repo_core.get_settings()
+    base_path = repo_core_settings.get("base_path", "/data/repo")
+    #
+    targets = [
+        os.path.join(base_path, "public", "depot"),
+        os.path.join(base_path, "public", "simple"),
+        os.path.join(base_path, "depot"),
+        os.path.join(base_path, "simple"),
+    ]
+    #
+    log.info("Purging files")
+    #
+    for target in targets:
+        target_path = os.path.join(target, release_tag)
+        #
+        if not os.path.exists(target_path):
+            continue
+        #
+        shutil.rmtree(target_path)

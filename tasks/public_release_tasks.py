@@ -103,7 +103,7 @@ def collect_public_release_files_task(*_args, **kwargs):  # pylint: disable=R091
     gc.collect()
 
 
-def collect_public_release_requirements_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
+def collect_public_release_requirements_task(*_args, **kwargs):  # pylint: disable=R0912,R0914,R0915
     """ Task """
     release_tag = kwargs["param"]
     #
@@ -187,8 +187,8 @@ def collect_public_release_requirements_task(*_args, **kwargs):  # pylint: disab
                     "pip3", "wheel",
                     "--isolated",
                     "--no-cache-dir",
+                ] + this.module.get_pip_args(config, release_tag, file_name) + [
                     "--cache-dir", cache_path,
-                    # "--extra-index-url", "https://download.pytorch.org/whl/cpu",
                     "--wheel-dir", requirements_path,
                     "--requirement", requirements_txt,
                 ],

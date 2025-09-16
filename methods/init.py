@@ -14,6 +14,7 @@ from ..tasks import repo_tasks
 from ..tasks import registry_tasks
 from ..tasks import release_tasks
 from ..tasks import public_release_tasks
+from ..tasks import export_tasks
 
 
 class Method:  # pylint: disable=E1101,R0903
@@ -87,6 +88,9 @@ class Method:  # pylint: disable=E1101,R0903
             ("collect_release_requirements", release_tasks.collect_release_requirements_task),
             ("collect_public_release_files", public_release_tasks.collect_public_release_files_task),
             ("collect_public_release_requirements", public_release_tasks.collect_public_release_requirements_task),
+            ("export_release", export_tasks.export_release_task),
+            ("remove_export", export_tasks.remove_export_task),
+            ("purge_release", registry_tasks.purge_release_task),
         ]
         #
         for task_name, task_func in local_tasks:
