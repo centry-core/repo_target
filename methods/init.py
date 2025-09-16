@@ -49,6 +49,8 @@ class Method:  # pylint: disable=E1101,R0903
         #
         # Registry
         #
+        registry_just_initialized = False
+        #
         if "repo_target_registry" not in self.descriptor.state:
             log.info("Registry not present: initializing")
             #
@@ -60,13 +62,16 @@ class Method:  # pylint: disable=E1101,R0903
             }
             self.descriptor.save_state()
             #
-            registry_tasks.sync_registry_task()
+            registry_just_initialized = True
         #
         # pylint: disable=C0301
         self.public_depot_groups = self.descriptor.state["repo_target_registry"]["public_depot_groups"]
         self.public_simple_groups = self.descriptor.state["repo_target_registry"]["public_simple_groups"]
         self.depot_groups = self.descriptor.state["repo_target_registry"]["depot_groups"]
         self.simple_groups = self.descriptor.state["repo_target_registry"]["simple_groups"]
+        #
+        if registry_just_initialized:
+            registry_tasks.sync_registry_task()
         #
         # Tasks
         #
