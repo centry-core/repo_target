@@ -27,7 +27,7 @@ def export_release_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     config = repo_core.get_settings()
     #
     base_path = config.get("base_path", "/data/repo")
-    depot_path = os.path.join(base_path, "depot")
+    depot_path = os.path.join(base_path, "public", "depot")
     #
     plugins_path = os.path.join(depot_path, export_release_tag, "plugins")
     bundles_path = os.path.join(depot_path, export_release_tag, "bundles")
@@ -64,7 +64,7 @@ def export_release_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     }
     #
     with this.module.lock:
-        this.module.depot_groups[export_release_tag] = group_data
+        this.module.public_depot_groups[export_release_tag] = group_data
         this.descriptor.save_state()
     #
     log.info("Result: %s", result_name)
@@ -87,7 +87,7 @@ def remove_export_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     config = repo_core.get_settings()
     #
     base_path = config.get("base_path", "/data/repo")
-    depot_path = os.path.join(base_path, "depot")
+    depot_path = os.path.join(base_path, "public", "depot")
     #
     plugins_path = os.path.join(depot_path, export_release_tag, "plugins")
     bundles_path = os.path.join(depot_path, export_release_tag, "bundles")
@@ -113,7 +113,7 @@ def remove_export_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     }
     #
     with this.module.lock:
-        this.module.depot_groups[export_release_tag] = group_data
+        this.module.public_depot_groups[export_release_tag] = group_data
         this.descriptor.save_state()
     #
     gc.collect()
