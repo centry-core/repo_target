@@ -13,9 +13,15 @@ class Method:  # pylint: disable=E1101,R0903
 
     # pylint: disable=W0201,R0912
     @web.method()
+    def is_internal_repo(self):
+        """ Method """
+        return self.descriptor.config.get("internal_repo", False)
+
+    # pylint: disable=W0201,R0912
+    @web.method()
     def auth_user_has_release(self, release):
         """ Method """
-        if self.descriptor.config.get("internal_repo", False):
+        if self.is_internal_repo():
             return True
         #
         return repo_core.user_has_release(release=release)

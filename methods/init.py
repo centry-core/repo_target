@@ -43,6 +43,9 @@ class Method:  # pylint: disable=E1101,R0903
         #
         auth.add_public_rule({"uri": f"{context.url_prefix}/target/public/.*"})
         #
+        if self.is_internal_repo():
+            auth.add_public_rule({"uri": f"{context.url_prefix}/target/.*"})
+        #
         # Lock
         #
         self.lock = threading.Lock()
