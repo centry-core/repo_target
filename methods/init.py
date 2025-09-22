@@ -82,6 +82,7 @@ class Method:  # pylint: disable=E1101,R0903
         # pylint: disable=C0301
         local_tasks = [
             ("list_repos", repo_tasks.list_repos_task),
+            ("tag_release_from_stage", repo_tasks.tag_release_from_stage_task),
             ("tag_release_from_main", repo_tasks.tag_release_from_main_task),
             ("sync_registry", registry_tasks.sync_registry_task),
             ("collect_release_files", release_tasks.collect_release_files_task),
