@@ -5,6 +5,8 @@
 
 import requests  # pylint: disable=E0401
 
+from tools import log  # pylint: disable=E0401
+
 
 class EliteAClient:  # pylint: disable=R0903,R0913
     """ Machinery """
@@ -223,6 +225,9 @@ class GithubClient:  # pylint: disable=R0913
             tag_name, tag_message,
             target_object, target_type,
         )
+        #
+        if "tag" not in tag or "sha" not in tag:
+            raise RuntimeError(f"Failed to create tag: {tag}")
         #
         ref = self.create_ref(
             owner, repo,
