@@ -1,6 +1,6 @@
 {
   "name": "Centry repository target",
-  "version": "0.1",
+  "version": "0.1.1",
   "depends_on": ["repo_core"],
   "init_after": [],
   "version_requirements": {

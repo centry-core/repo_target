@@ -180,6 +180,18 @@ class GithubClient:  # pylint: disable=R0913
         #
         return response.json()
 
+    def get_ref(
+            self,
+            owner, repo,
+            ref_name,
+        ):
+        """ API """
+        response = self.session.get(
+            f"https://api.github.com/repos/{owner}/{repo}/git/ref/{ref_name}",
+        )
+        #
+        return response.json()
+
     def create_ref(
             self,
             owner, repo,
@@ -212,6 +224,18 @@ class GithubClient:  # pylint: disable=R0913
         )
         #
         return response.json()
+
+    def delete_ref(
+            self,
+            owner, repo,
+            ref_name,
+        ):
+        """ API """
+        response = self.session.delete(
+            f"https://api.github.com/repos/{owner}/{repo}/git/refs/{ref_name}",
+        )
+        #
+        response.raise_for_status()
 
     def create_or_update_tag_and_ref(  # pylint: disable=R0917
             self,

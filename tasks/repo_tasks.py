@@ -184,3 +184,49 @@ def tag_release_from_stage_task(*_args, **kwargs):  # pylint: disable=R0912,R091
                     log.exception(
                         "Failed to apply tag: %s - %s", plugin_info["org"], plugin_info["repo"]
                     )
+
+
+def make_staging_from_main_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
+    """ Task """
+    target_param = kwargs["param"].strip()
+    #
+    whitelist = []
+    #
+    if target_param:
+        whitelist = target_param.split(",")
+    #
+    config = repo_core.get_settings()
+    github_client = GithubClient(config["github_token"])
+    staging_name = "staging"
+    #
+    for org in config["target_orgs"]:  # pylint: disable=R1702
+        for repo_name in config["known_repos"]["target"][org]:
+            if whitelist and repo_name not in whitelist:
+                continue
+            #
+            log.info("Staging from main: %s - %s", org, repo_name)
+            #
+            try:
+                repo = github_client.get_repo(org, repo_name)
+                branch = github_client.get_branch(
+                    org, repo_name, repo["default_branch"]
+                )
+                staging_ref = github_client.get_ref(org, repo_name, f"heads/{staging_name}")
+                #
+                if "ref" in staging_ref:
+                    github_client.delete_ref(
+                        org, repo_name,
+                        f"heads/{staging_name}",
+                    )
+                    #
+                    log.info("Deleted existing ref")
+                #
+                new_ref = github_client.create_ref(
+                    org, repo_name,
+                    f"refs/heads/{staging_name}",
+                    branch["commit"]["sha"],
+                )
+                #
+                log.info("Created ref: %s", new_ref)
+            except:  # pylint: disable=W0702
+                log.exception("Failed to stage: %s - %s", org, repo_name)
