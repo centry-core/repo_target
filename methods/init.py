@@ -15,6 +15,7 @@ from ..tasks import registry_tasks
 from ..tasks import release_tasks
 from ..tasks import public_release_tasks
 from ..tasks import export_tasks
+from ..tasks import diff_tasks
 
 
 class Method:  # pylint: disable=E1101,R0903
@@ -93,6 +94,7 @@ class Method:  # pylint: disable=E1101,R0903
             ("export_release", export_tasks.export_release_task),
             ("remove_export", export_tasks.remove_export_task),
             ("purge_release", registry_tasks.purge_release_task),
+            ("diff_stage_migrations", diff_tasks.diff_stage_migrations_task),
         ]
         #
         for task_name, task_func in local_tasks:
