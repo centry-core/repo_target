@@ -120,11 +120,14 @@ def diff_stage_migrations_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     #
     log.info("- - - - - - - - -")
     #
-    process.run_command(
-        [
-            "diff", "-Naru", "prev", "next",
-        ],
-        cwd=diffs_path,
-    )
+    try:
+        process.run_command(
+            [
+                "diff", "-Naru", "prev", "next",
+            ],
+            cwd=diffs_path,
+        )
+    except:  # pylint: disable=W0702
+        pass  # we expect to have return code 1 when there are changes
     #
     shutil.rmtree(diffs_path)
