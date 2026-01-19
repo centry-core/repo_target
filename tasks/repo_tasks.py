@@ -230,3 +230,58 @@ def make_staging_from_main_task(*_args, **kwargs):  # pylint: disable=R0912,R091
                 log.info("Created ref: %s", new_ref)
             except:  # pylint: disable=W0702
                 log.exception("Failed to stage: %s - %s", org, repo_name)
+
+
+def make_release_from_staging_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
+    """ Task """
+    target_param = kwargs["param"].strip()
+    #
+    if not target_param:
+        log.error("Please specify release name")
+        return
+    #
+    whitelist = []
+    #
+    if ":" in target_param:
+        target_param, whitelist_data = target_param.split(":", 1)
+        whitelist = whitelist_data.split(",")
+    #
+    config = repo_core.get_settings()
+    github_client = GithubClient(config["github_token"])
+    staging_name = "staging"
+    release_name = target_param
+    release_tag_message = release_name
+    release_branch_name = f"release/{release_name}"
+    #
+    for org in config["target_orgs"]:  # pylint: disable=R1702
+        for repo_name in config["known_repos"]["target"][org]:
+            if whitelist and repo_name not in whitelist:
+                continue
+            #
+            log.info("Releasing from staging: %s - %s", org, repo_name)
+            #
+            try:
+                staging_branch = github_client.get_branch(org, repo_name, staging_name)
+                release_ref = github_client.get_ref(org, repo_name, f"heads/{release_branch_name}")
+                #
+                if "ref" in release_ref:
+                    log.warning("Release branch already exists")
+                    continue
+                #
+                new_ref = github_client.create_ref(
+                    org, repo_name,
+                    f"refs/heads/{release_branch_name}",
+                    staging_branch["commit"]["sha"],
+                )
+                #
+                log.info("Created ref: %s", new_ref)
+                #
+                release_branch = github_client.get_branch(org, repo_name, release_branch_name)
+                #
+                github_client.create_or_update_tag_and_ref(
+                    org, repo_name,
+                    release_name, release_tag_message,
+                    release_branch["commit"]["sha"],
+                )
+            except:  # pylint: disable=W0702
+                log.exception("Failed to release: %s - %s", org, repo_name)
