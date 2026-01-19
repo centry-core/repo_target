@@ -183,8 +183,8 @@ def diff_release_migrations_task(*_args, **kwargs):  # pylint: disable=R0912,R09
                     ref=prev_release,
                 )
                 #
-                if "content" in prev_content:
-                    with open(os.path.join(prev_path, f"{target_name}.txt"), "wb") as file:
+                with open(os.path.join(prev_path, f"{target_name}.txt"), "wb") as file:
+                    if "content" in prev_content:
                         file.write(base64.b64decode(prev_content["content"]))
                 #
                 log.info("Getting next: %s - %s", org, target_name)
@@ -194,8 +194,8 @@ def diff_release_migrations_task(*_args, **kwargs):  # pylint: disable=R0912,R09
                     ref=next_release,
                 )
                 #
-                if "content" in next_content:
-                    with open(os.path.join(next_path, f"{target_name}.txt"), "wb") as file:
+                with open(os.path.join(next_path, f"{target_name}.txt"), "wb") as file:
+                    if "content" in next_content:
                         file.write(base64.b64decode(next_content["content"]))
             except:  # pylint: disable=W0702
                 log.exception("Failed to get: %s - %s", org, target_name)
