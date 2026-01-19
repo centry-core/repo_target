@@ -96,7 +96,7 @@ class Method:  # pylint: disable=E1101,R0903
             ("remove_export", export_tasks.remove_export_task),
             ("purge_release", registry_tasks.purge_release_task),
             ("diff_stage_migrations", diff_tasks.diff_stage_migrations_task),
-            # ("diff_release_migrations", diff_tasks.diff_release_migrations_task),
+            ("diff_release_migrations", diff_tasks.diff_release_migrations_task),
         ]
         #
         for task_name, task_func in local_tasks:

@@ -131,3 +131,85 @@ def diff_stage_migrations_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
         pass  # we expect to have return code 1 when there are changes
     #
     shutil.rmtree(diffs_path)
+
+
+def diff_release_migrations_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
+    target_param = kwargs["param"].strip()
+    #
+    if not target_param:
+        log.error("Please specify prev-next release names")
+        return
+    #
+    whitelist = []
+    #
+    if ":" in target_param:
+        target_param, whitelist_data = target_param.split(":", 1)
+        whitelist = whitelist_data.split(",")
+    #
+    prev_release, next_release = target_param.split(",", 1)
+    #
+    config = repo_core.get_settings()
+    #
+    base_path = config.get("base_path", "/data/repo")
+    diffs_path = os.path.join(base_path, "diffs")
+    #
+    prev_path = os.path.join(diffs_path, "prev")
+    next_path = os.path.join(diffs_path, "next")
+    #
+    if os.path.exists(prev_path):
+        shutil.rmtree(prev_path)
+    #
+    if os.path.exists(next_path):
+        shutil.rmtree(next_path)
+    #
+    if not os.path.exists(prev_path):
+        os.makedirs(prev_path)
+    #
+    if not os.path.exists(next_path):
+        os.makedirs(next_path)
+    #
+    github_client = GithubClient(config["github_token"])
+    #
+    for org in config["target_orgs"]:
+        for target_name in config["known_repos"]["target"].get(org, []):
+            if whitelist and target_name not in whitelist:
+                continue
+            #
+            try:
+                log.info("Getting prev: %s - %s", org, target_name)
+                #
+                prev_content = github_client.get_content(
+                    org, target_name, "db_migrations.txt",
+                    ref=prev_release,
+                )
+                #
+                if "content" in prev_content:
+                    with open(os.path.join(prev_path, f"{target_name}.txt"), "wb") as file:
+                        file.write(base64.b64decode(prev_content["content"]))
+                #
+                log.info("Getting next: %s - %s", org, target_name)
+                #
+                next_content = github_client.get_content(
+                    org, target_name, "db_migrations.txt",
+                    ref=next_release,
+                )
+                #
+                if "content" in next_content:
+                    with open(os.path.join(next_path, f"{target_name}.txt"), "wb") as file:
+                        file.write(base64.b64decode(next_content["content"]))
+            except:  # pylint: disable=W0702
+                log.exception("Failed to get: %s - %s", org, target_name)
+    #
+    log.info("- - - - - - - - -")
+    #
+    try:
+        process.run_command(
+            [
+                "diff", "-Naru", "prev", "next",
+            ],
+            cwd=diffs_path,
+        )
+    except:  # pylint: disable=W0702
+        pass  # we expect to have return code 1 when there are changes
+    #
+    shutil.rmtree(diffs_path)
