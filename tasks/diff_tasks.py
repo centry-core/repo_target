@@ -206,7 +206,7 @@ def diff_release_migrations_task(*_args, **kwargs):  # pylint: disable=R0912,R09
         process.run_command(
             [
                 "/bin/bash", "-c",
-                "diff -Naru prev next || true; sleep 5",
+                "diff -Naru prev next || true; echo '- - - - - - - - - -'; sleep 5",
             ],
             cwd=diffs_path,
         )
