@@ -266,15 +266,14 @@ def make_release_from_staging_task(*_args, **kwargs):  # pylint: disable=R0912,R
                 #
                 if "ref" in release_ref:
                     log.warning("Release branch already exists")
-                    continue
-                #
-                new_ref = github_client.create_ref(
-                    org, repo_name,
-                    f"refs/heads/{release_branch_name}",
-                    staging_branch["commit"]["sha"],
-                )
-                #
-                log.info("Created ref: %s", new_ref)
+                else:
+                    new_ref = github_client.create_ref(
+                        org, repo_name,
+                        f"refs/heads/{release_branch_name}",
+                        staging_branch["commit"]["sha"],
+                    )
+                    #
+                    log.info("Created ref: %s", new_ref)
                 #
                 release_branch = github_client.get_branch(org, repo_name, release_branch_name)
                 #
