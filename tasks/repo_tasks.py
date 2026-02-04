@@ -186,7 +186,12 @@ def tag_release_from_stage_task(*_args, **kwargs):  # pylint: disable=R0912,R091
                     )
 
 
-def make_staging_from_main_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
+#
+# ---
+#
+
+
+def delete_staging_branch_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     """ Task """
     target_param = kwargs["param"].strip()
     #
@@ -197,6 +202,7 @@ def make_staging_from_main_task(*_args, **kwargs):  # pylint: disable=R0912,R091
     #
     config = repo_core.get_settings()
     github_client = GithubClient(config["github_token"])
+    #
     staging_name = "staging"
     #
     for org in config["target_orgs"]:  # pylint: disable=R1702
@@ -204,13 +210,9 @@ def make_staging_from_main_task(*_args, **kwargs):  # pylint: disable=R0912,R091
             if whitelist and repo_name not in whitelist:
                 continue
             #
-            log.info("Staging from main: %s - %s", org, repo_name)
+            log.info("Deleting staging: %s - %s", org, repo_name)
             #
             try:
-                repo = github_client.get_repo(org, repo_name)
-                branch = github_client.get_branch(
-                    org, repo_name, repo["default_branch"]
-                )
                 staging_ref = github_client.get_ref(org, repo_name, f"heads/{staging_name}")
                 #
                 if "ref" in staging_ref:
@@ -219,20 +221,14 @@ def make_staging_from_main_task(*_args, **kwargs):  # pylint: disable=R0912,R091
                         f"heads/{staging_name}",
                     )
                     #
-                    log.info("Deleted existing ref")
-                #
-                new_ref = github_client.create_ref(
-                    org, repo_name,
-                    f"refs/heads/{staging_name}",
-                    branch["commit"]["sha"],
-                )
-                #
-                log.info("Created ref: %s", new_ref)
+                    log.info("Deleted existing staging ref")
+                else:
+                    log.info("Staging ref not found")
             except:  # pylint: disable=W0702
-                log.exception("Failed to stage: %s - %s", org, repo_name)
+                log.exception("Failed to delete stage: %s - %s", org, repo_name)
 
 
-def make_release_from_staging_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
+def make_release_branch_from_main_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
     """ Task """
     target_param = kwargs["param"].strip()
     #
@@ -248,7 +244,53 @@ def make_release_from_staging_task(*_args, **kwargs):  # pylint: disable=R0912,R
     #
     config = repo_core.get_settings()
     github_client = GithubClient(config["github_token"])
-    staging_name = "staging"
+    #
+    source_name = "main"
+    release_name = target_param
+    release_branch_name = f"release/{release_name}"
+    #
+    for org in config["target_orgs"]:  # pylint: disable=R1702
+        for repo_name in config["known_repos"]["target"][org]:
+            if whitelist and repo_name not in whitelist:
+                continue
+            #
+            log.info("Making %s from %s: %s - %s", release_name, source_name, org, repo_name)
+            #
+            try:
+                source_branch = github_client.get_branch(org, repo_name, source_name)
+                release_ref = github_client.get_ref(org, repo_name, f"heads/{release_branch_name}")
+                #
+                if "ref" in release_ref:
+                    log.warning("Release branch already exists")
+                else:
+                    new_ref = github_client.create_ref(
+                        org, repo_name,
+                        f"refs/heads/{release_branch_name}",
+                        source_branch["commit"]["sha"],
+                    )
+                    #
+                    log.info("Created ref: %s", new_ref)
+            except:  # pylint: disable=W0702
+                log.exception("Failed to make: %s - %s", org, repo_name)
+
+
+def tag_release_task(*_args, **kwargs):  # pylint: disable=R0912,R0914
+    """ Task """
+    target_param = kwargs["param"].strip()
+    #
+    if not target_param:
+        log.error("Please specify release name")
+        return
+    #
+    whitelist = []
+    #
+    if ":" in target_param:
+        target_param, whitelist_data = target_param.split(":", 1)
+        whitelist = whitelist_data.split(",")
+    #
+    config = repo_core.get_settings()
+    github_client = GithubClient(config["github_token"])
+    #
     release_name = target_param
     release_tag_message = release_name
     release_branch_name = f"release/{release_name}"
@@ -258,22 +300,14 @@ def make_release_from_staging_task(*_args, **kwargs):  # pylint: disable=R0912,R
             if whitelist and repo_name not in whitelist:
                 continue
             #
-            log.info("Releasing from staging: %s - %s", org, repo_name)
+            log.info("Tagging %s: %s - %s", release_name, org, repo_name)
             #
             try:
-                staging_branch = github_client.get_branch(org, repo_name, staging_name)
                 release_ref = github_client.get_ref(org, repo_name, f"heads/{release_branch_name}")
                 #
-                if "ref" in release_ref:
-                    log.warning("Release branch already exists")
-                else:
-                    new_ref = github_client.create_ref(
-                        org, repo_name,
-                        f"refs/heads/{release_branch_name}",
-                        staging_branch["commit"]["sha"],
-                    )
-                    #
-                    log.info("Created ref: %s", new_ref)
+                if "ref" not in release_ref:
+                    log.warning("Release branch does not exist")
+                    continue
                 #
                 release_branch = github_client.get_branch(org, repo_name, release_branch_name)
                 #
@@ -283,4 +317,4 @@ def make_release_from_staging_task(*_args, **kwargs):  # pylint: disable=R0912,R
                     release_branch["commit"]["sha"],
                 )
             except:  # pylint: disable=W0702
-                log.exception("Failed to release: %s - %s", org, repo_name)
+                log.exception("Failed to tag: %s - %s", org, repo_name)
